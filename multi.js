@@ -3,17 +3,17 @@ const { Consumer } = require("sqs-consumer");
 const accountId = process.env.AWS_ACCOUNT_ID;
 const region = "eu-central-1";
 
-const processProjectTransactions = async (messages) => {
-  console.log("Handling messages for project-transactions:");
-  console.log(messages);
+const processProjectTransactions = async (message) => {
+  console.log("Handling message for project-transactions:");
+  console.log(message);
 };
-const processSendVatEmails = async (messages) => {
-  console.log("Handling messages for project-transactions:");
-  console.log(messages);
+const processSendVatEmails = async (message) => {
+  console.log("Handling message for project-transactions:");
+  console.log(message);
 };
-const processImportRecurlyInvoices = async (messages) => {
-  console.log("Handling messages for import-recurly-invoices:");
-  console.log(messages);
+const processImportRecurlyInvoices = async (message) => {
+  console.log("Handling message for import-recurly-invoices:");
+  console.log(message);
 };
 
 const queues = {
@@ -27,8 +27,7 @@ const consumers = {};
 for (const queue of Object.keys(queues)) {
   const config = {
     queueUrl: `https://sqs.${region}.amazonaws.com/${accountId}/${queue}.fifo`,
-    handleMessageBatch: queues[queue],
-    batchSize: 10,
+    handleMessage: queues[queue],
     region,
   };
   const consumer = Consumer.create(config);
