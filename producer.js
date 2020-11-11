@@ -12,6 +12,8 @@ const queues = [
   "import-recurly-invoices",
 ];
 
+const randomInt = (max) => Math.floor(Math.random() * Math.floor(max));
+
 const getMessageForJob = (jobType, bodyObject) => {
   return {
     MessageBody: JSON.stringify(bodyObject),
@@ -40,7 +42,7 @@ const addMessagesToQueue = (queue, count) => {
   while (count > 0) {
     count = count - 1;
     const message = getMessageForJob(queue, {
-      accountId: Math.floor(Math.random() * Math.floor(999)),
+      accountId: randomInt(999),
     });
     sendMessage(message);
   }
@@ -48,7 +50,7 @@ const addMessagesToQueue = (queue, count) => {
 
 const start = async () => {
   for (const queue of queues) {
-    await addMessagesToQueue(queue, 3);
+    await addMessagesToQueue(queue, randomInt(3));
   }
 };
 
