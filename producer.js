@@ -50,7 +50,7 @@ const addMessagesToQueue = (queue, count) => {
 
 const start = async () => {
   for (const queue of queues) {
-    await addMessagesToQueue(queue, randomInt(3));
+    await addMessagesToQueue(queue, 5);
   }
 };
 
