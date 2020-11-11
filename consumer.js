@@ -30,13 +30,20 @@ const receiveMessages = async () => {
   });
 };
 
-const deleteMessage = async (message) => {
+const deleteMessages = async (messages) => {
+  const receiptHandles = [];
+
+  messages.map((m) => {
+    receiptHandles.push({ Id: m.MessageId, ReceiptHandle: m.ReceiptHandle });
+  });
+
   const deleteParams = {
     QueueUrl: process.env.SQS_QUEUE,
-    ReceiptHandle: message.ReceiptHandle,
+    Entries: receiptHandles,
   };
+
   return new Promise((resolve, reject) => {
-    sqs.deleteMessage(deleteParams, function (err, data) {
+    sqs.deleteMessageBatch(deleteParams, function (err, data) {
       if (err) {
         reject(err);
       } else {
@@ -52,17 +59,19 @@ const processMessage = async (message) => {
     `<${new Date()}> - <${message.MessageAttributes.JobType.StringValue}>: `,
     body
   );
-  sleep(5000);
-  await deleteMessage(message);
+  await sleep(1000);
+  return message.MessageId;
 };
 
 const processMessages = async (messages = []) => {
-  console.log(`Processing <${messages.length}> messages:`);
+  console.log(`\n\nProcessing <${messages.length}> messages:\n`);
   await Promise.all(messages.map((m) => processMessage(m)));
+  const result = await deleteMessages(messages);
+  console.log(`\nSuccessfully deleted ${result.Successful.length} messages.\n`);
 };
 
 const start = async () => {
-  console.log("Started listening...");
+  console.log("Started listening...\n\n");
   while (true) {
     const messages = await receiveMessages();
     await processMessages(messages);
