@@ -1,7 +1,16 @@
 const AWS = require("aws-sdk");
 
-AWS.config.update({ region: "eu-central-1" });
+const accountId = process.env.AWS_ACCOUNT_ID;
+const region = "eu-central-1";
+
+AWS.config.update({ region });
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
+
+const queues = [
+  "project-transactions",
+  "send-vat-emails",
+  "import-recurly-invoices",
+];
 
 const getMessageForJob = (jobType, bodyObject) => {
   return {
@@ -12,7 +21,7 @@ const getMessageForJob = (jobType, bodyObject) => {
         StringValue: jobType,
       },
     },
-    QueueUrl: process.env.SQS_QUEUE,
+    QueueUrl: `https://sqs.${region}.amazonaws.com/${accountId}/${jobType}.fifo`,
     MessageGroupId: `${bodyObject.accountId}`,
   };
 };
@@ -27,19 +36,20 @@ const sendMessage = (messageOptions) => {
   });
 };
 
-const jobs = [
-  "project-transactions",
-  "send-vat-emails",
-  "import-recurly-invoices",
-  "process-duns",
-];
-
-for (const job of jobs) {
-  for (let i = 0; i < 9; i++) {
-    sendMessage(
-      getMessageForJob(job, {
-        accountId: Math.floor(Math.random() * Math.floor(999)),
-      })
-    );
+const addMessagesToQueue = (queue, count) => {
+  while (count > 0) {
+    count = count - 1;
+    const message = getMessageForJob(queue, {
+      accountId: Math.floor(Math.random() * Math.floor(999)),
+    });
+    sendMessage(message);
   }
-}
+};
+
+const start = async () => {
+  for (const queue of queues) {
+    await addMessagesToQueue(queue, 3);
+  }
+};
+
+start();
