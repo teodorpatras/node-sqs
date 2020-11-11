@@ -7,7 +7,7 @@ const params = {
   AttributeNames: ["SentTimestamp"],
   MaxNumberOfMessages: 10,
   MessageAttributeNames: ["All"],
-  QueueUrl: queueURL,
+  QueueUrl: process.env.SQS_QUEUE,
   VisibilityTimeout: 20,
   WaitTimeSeconds: 20,
 };
